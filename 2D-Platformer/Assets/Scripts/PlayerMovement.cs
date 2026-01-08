@@ -1,31 +1,37 @@
+using System;
 using UnityEngine;
 
 public class PlayerMovement : MonoBehaviour
 {
     private Rigidbody2D _rb;
-    private float _moveSpeed = 500f;
+    private Animator _animator;
+    private float _moveSpeed = 250f;
     private float _horizontalInput;
-    private float _jumpForce = 2f;
-    private bool _isJumping = false;
-    private bool _isFacingRight = false; // Set default value according to sprite.
+    private float _jumpForce = 35f;
+    private bool _isGrounded = false;
+    private bool _isFacingRight = true; // Set default value according to sprite.
     
     private void Awake()
     {
         _rb = GetComponent<Rigidbody2D>();
+        _animator = GetComponent<Animator>();
     }
 
     private void Update()
     {
         _horizontalInput = Input.GetAxis("Horizontal"); // Needs to update to new Input System
         FlipSprite();
-        if (!Input.GetButtonDown("Jump") || _isJumping) return; // Needs to update to new Input System
-        _isJumping = true;
+        if (!Input.GetButtonDown("Jump") || !_isGrounded) return; // Needs to update to new Input System
+        _isGrounded = false;
+        _rb.AddForceY(_jumpForce, ForceMode2D.Impulse);
+        _animator.SetBool("isJumping", !_isGrounded);
     }
 
     private void FixedUpdate()
     {
         _rb.linearVelocityX = _horizontalInput * _moveSpeed * Time.fixedDeltaTime;
-        if (_isJumping) _rb.linearVelocityY = _jumpForce;
+        _animator.SetFloat("xVelocity", Math.Abs(_rb.linearVelocityX));
+        _animator.SetFloat("yVelocity", _rb.linearVelocityY);
     }
     
     private void FlipSprite()
@@ -35,8 +41,9 @@ public class PlayerMovement : MonoBehaviour
         transform.localScale = new Vector3(-transform.localScale.x, transform.localScale.y, transform.localScale.z);
     }
 
-    private void OnCollisionEnter2D(Collision2D other)
+    private void OnTriggerEnter2D(Collider2D other)
     {
-        _isJumping = false;
+        _isGrounded = true;
+        _animator.SetBool("isJumping", !_isGrounded);
     }
 }

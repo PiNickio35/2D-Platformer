@@ -43,7 +43,10 @@ public class PlayerMovement : MonoBehaviour
 
     private void OnTriggerEnter2D(Collider2D other)
     {
-        _isGrounded = true;
-        _animator.SetBool("isJumping", !_isGrounded);
+        if (other.CompareTag("Platform"))
+        {
+            _isGrounded = true;
+            _animator.SetBool("isJumping", !_isGrounded);
+        }
     }
 }
